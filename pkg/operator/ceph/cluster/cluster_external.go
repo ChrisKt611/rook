@@ -44,6 +44,7 @@ func (c *ClusterController) configureExternalCephCluster(cluster *cluster) error
 	// loop until we find the secret necessary to connect to the external cluster
 	// then populate clusterInfo
 	cluster.ClusterInfo = mon.PopulateExternalClusterInfo(c.context, c.namespacedName.Namespace, cluster.ownerRef)
+	cluster.ClusterInfo.SetName(cluster.crdName)
 
 	if !client.IsKeyringBase64Encoded(cluster.ClusterInfo.CephCred.Secret) {
 		return errors.Errorf("invalid user health checker key for user %q", cluster.ClusterInfo.CephCred.Username)
