@@ -343,6 +343,7 @@ func PopulateExternalClusterInfo(context *clusterd.Context, namespace string, ow
 			time.Sleep(externalConnectionRetry)
 			continue
 		}
+		logger.Infof("found the cluster info to connect to the external cluster. will use %q to check health and monitor status. mons=%+v", clusterInfo.CephCred.Username, clusterInfo.Monitors)
 		// If an admin key was provided we don't need to load the other resources
 		// Some people might want to give the admin key
 		// The necessary users/keys/secrets will be created by Rook
@@ -356,7 +357,6 @@ func PopulateExternalClusterInfo(context *clusterd.Context, namespace string, ow
 			time.Sleep(externalConnectionRetry)
 			continue
 		}
-		logger.Infof("found the cluster info to connect to the external cluster. will use %q to check health and monitor status. mons=%+v", clusterInfo.CephCred.Username, clusterInfo.Monitors)
 		break
 	}
 
