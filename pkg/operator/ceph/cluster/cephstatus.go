@@ -26,8 +26,10 @@ import (
 	cephv1 "github.com/rook/rook/pkg/apis/ceph.rook.io/v1"
 	"github.com/rook/rook/pkg/clusterd"
 	cephclient "github.com/rook/rook/pkg/daemon/ceph/client"
+	"github.com/rook/rook/pkg/operator/ceph/config"
 	opcontroller "github.com/rook/rook/pkg/operator/ceph/controller"
 	cephver "github.com/rook/rook/pkg/operator/ceph/version"
+	v1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -135,10 +137,19 @@ func (c *cephStatusChecker) updateCephStatus(status *cephclient.CephStatus) erro
 	}
 
 	cephCluster.Status.CephStatus = toCustomResourceStatus(cephCluster.Status, status)
-	cephCluster.Status.Phase = cephv1.ConditionReady
+
+	var condition cephv1.ConditionType
+	var reason, message string
+	condition = cephv1.ConditionReady
+	reason = "ClusterCreated"
+	message = "Cluster created successfully"
 	if c.isExternal {
-		cephCluster.Status.Phase = cephv1.ConditionConnected
+		condition = cephv1.ConditionConnected
+		reason = "ClusterConnected"
+		message = "Cluster connected successfully"
 	}
+	config.ConditionExport(c.context, c.namespacedName, condition, v1.ConditionTrue, reason, message)
+
 	if err := opcontroller.UpdateStatus(c.client, cephCluster); err != nil {
 		return errors.Wrapf(err, "failed to update cluster %q status", c.namespacedName.Namespace)
 	}

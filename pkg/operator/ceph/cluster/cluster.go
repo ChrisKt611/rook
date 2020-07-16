@@ -292,9 +292,6 @@ func (c *ClusterController) configureLocalCephCluster(cluster *cluster, clusterO
 		return errors.Wrap(err, "failed to create cluster")
 	}
 
-	// Set the condition to the cluster object
-	config.ConditionExport(c.context, c.namespacedName, cephv1.ConditionReady, v1.ConditionTrue, "ClusterCreated", "Cluster created successfully")
-
 	return nil
 }
 
