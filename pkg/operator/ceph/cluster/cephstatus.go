@@ -46,10 +46,11 @@ type cephStatusChecker struct {
 	cephUser       string
 	client         client.Client
 	namespacedName types.NamespacedName
+	isExternal     bool
 }
 
 // newCephStatusChecker creates a new HealthChecker object
-func newCephStatusChecker(context *clusterd.Context, resourceName string, cephUser string, namespacedName types.NamespacedName, healthCheck cephv1.CephClusterHealthCheckSpec) *cephStatusChecker {
+func newCephStatusChecker(context *clusterd.Context, resourceName string, cephUser string, namespacedName types.NamespacedName, healthCheck cephv1.CephClusterHealthCheckSpec, isExternal bool) *cephStatusChecker {
 	c := &cephStatusChecker{
 		context:        context,
 		resourceName:   resourceName,
@@ -57,6 +58,7 @@ func newCephStatusChecker(context *clusterd.Context, resourceName string, cephUs
 		cephUser:       cephUser,
 		client:         context.Client,
 		namespacedName: namespacedName,
+		isExternal:     isExternal,
 	}
 
 	// allow overriding the check interval with an env var on the operator
@@ -133,6 +135,10 @@ func (c *cephStatusChecker) updateCephStatus(status *cephclient.CephStatus) erro
 	}
 
 	cephCluster.Status.CephStatus = toCustomResourceStatus(cephCluster.Status, status)
+	cephCluster.Status.Phase = cephv1.ConditionReady
+	if c.isExternal {
+		cephCluster.Status.Phase = cephv1.ConditionConnected
+	}
 	if err := opcontroller.UpdateStatus(c.client, cephCluster); err != nil {
 		return errors.Wrapf(err, "failed to update cluster %q status", c.namespacedName.Namespace)
 	}

@@ -120,7 +120,7 @@ func (c *ClusterController) startMonitoringCheck(cluster *cluster, daemon string
 		}
 
 	case "status":
-		cephChecker := newCephStatusChecker(c.context, cluster.Namespace, cephUser, c.namespacedName, cluster.Spec.HealthCheck)
+		cephChecker := newCephStatusChecker(c.context, cluster.Namespace, cephUser, c.namespacedName, cluster.Spec.HealthCheck, cluster.Spec.External.Enable)
 		logger.Infof("enabling ceph %s monitoring goroutine for cluster %q", daemon, cluster.Namespace)
 		go cephChecker.checkCephStatus(cluster.monitoringChannels[daemon].stopChan)
 	}

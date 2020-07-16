@@ -111,12 +111,12 @@ func TestNewCephStatusChecker(t *testing.T) {
 		args args
 		want *cephStatusChecker
 	}{
-		{"default-interval", args{c, n, u, nsName, cephv1.CephClusterHealthCheckSpec{}}, &cephStatusChecker{c, n, defaultStatusCheckInterval, u, c.Client, nsName}},
-		{"default-interval", args{c, n, u, nsName, cephv1.CephClusterHealthCheckSpec{DaemonHealth: cephv1.DaemonHealthSpec{Status: cephv1.HealthCheckSpec{Interval: "10s"}}}}, &cephStatusChecker{c, n, time10s, u, c.Client, nsName}},
+		{"default-interval", args{c, n, u, nsName, cephv1.CephClusterHealthCheckSpec{}}, &cephStatusChecker{c, n, defaultStatusCheckInterval, u, c.Client, nsName, false}},
+		{"default-interval", args{c, n, u, nsName, cephv1.CephClusterHealthCheckSpec{DaemonHealth: cephv1.DaemonHealthSpec{Status: cephv1.HealthCheckSpec{Interval: "10s"}}}}, &cephStatusChecker{c, n, time10s, u, c.Client, nsName, false}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := newCephStatusChecker(tt.args.context, tt.args.resourceName, tt.args.cephUser, tt.args.namespacedName, tt.args.healthCheck); !reflect.DeepEqual(got, tt.want) {
+			if got := newCephStatusChecker(tt.args.context, tt.args.resourceName, tt.args.cephUser, tt.args.namespacedName, tt.args.healthCheck, false); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("newCephStatusChecker() = %v, want %v", got, tt.want)
 			}
 		})

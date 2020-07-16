@@ -291,8 +291,8 @@ func (r *ReconcileCephObjectStore) reconcile(request reconcile.Request) (reconci
 		return r.setFailedStatus(request.NamespacedName, "failed to create object store deployments", err)
 	}
 
-	// Set Ready status, we are done reconciling
-	updateStatus(r.client, request.NamespacedName, cephv1.ConditionReady, buildStatusInfo(cephObjectStore))
+	// Set Progressing status, we are done reconciling, the health check go routine will update the status
+	updateStatus(r.client, request.NamespacedName, cephv1.ConditionProgressing, buildStatusInfo(cephObjectStore))
 
 	// Return and do not requeue
 	logger.Debug("done reconciling")
@@ -487,7 +487,7 @@ func (r *ReconcileCephObjectStore) startMonitoring(objectstore *cephv1.CephObjec
 		port = strconv.Itoa(int(objectstore.Spec.Gateway.SecurePort))
 	}
 
-	rgwChecker := newBucketChecker(r.context, objContext, serviceIP, port, r.client, namespacedName, &objectstore.Spec.HealthCheck)
+	rgwChecker := newBucketChecker(r.context, objContext, serviceIP, port, r.client, namespacedName, &objectstore.Spec.HealthCheck, r.cephClusterSpec.External.Enable)
 	logger.Info("starting rgw healthcheck")
 	go rgwChecker.checkObjectStore(r.objectStoreChannels[objectstore.Name].stopChan)
 }

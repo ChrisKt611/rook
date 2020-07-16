@@ -132,9 +132,6 @@ func (c *ClusterController) configureExternalCephCluster(cluster *cluster) error
 		}
 	}
 
-	// Everything went well so let's update the CR's status to "connected"
-	config.ConditionExport(c.context, c.namespacedName, cephv1.ConditionConnected, v1.ConditionTrue, "ClusterConnected", "Cluster connected successfully")
-
 	// Mark initialization has done
 	cluster.initCompleted = true
 
