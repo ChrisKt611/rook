@@ -77,6 +77,12 @@ func newBucketChecker(context *clusterd.Context, objContext *Context, serviceIP,
 
 // checkObjectStore periodically checks the health of the cluster
 func (c *bucketChecker) checkObjectStore(stopCh chan struct{}) {
+	// check the object store health immediately before starting the loop
+	err := c.checkObjectStoreHealth()
+	if err != nil {
+		updateStatusBucket(c.client, c.namespacedName, cephv1.ConditionFailure, err.Error())
+		logger.Warningf("failed to check rgw health for object store %q. %v", c.namespacedName.Name, err)
+	}
 
 	for {
 		select {
