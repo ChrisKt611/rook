@@ -116,9 +116,12 @@ func (c *ClusterController) startMonitoringCheck(cluster *cluster, daemon string
 		go healthChecker.Check(cluster.monitoringChannels[daemon].stopChan)
 
 	case "osd":
-		c.osdChecker = osd.NewOSDHealthMonitor(c.context, cluster.Namespace, cluster.Spec.RemoveOSDsIfOutAndSafeToRemove, cluster.Spec.HealthCheck)
-		logger.Infof("enabling ceph %s monitoring goroutine for cluster %q", daemon, cluster.Namespace)
-		go c.osdChecker.Start(cluster.monitoringChannels[daemon].stopChan)
+		// Do not monitor OSDs if the cluster is external
+		if !cluster.Spec.External.Enable {
+			c.osdChecker = osd.NewOSDHealthMonitor(c.context, cluster.Namespace, cluster.Spec.RemoveOSDsIfOutAndSafeToRemove, cluster.Spec.HealthCheck)
+			logger.Infof("enabling ceph %s monitoring goroutine for cluster %q", daemon, cluster.Namespace)
+			go c.osdChecker.Start(cluster.monitoringChannels[daemon].stopChan)
+		}
 
 	case "status":
 		cephChecker := newCephStatusChecker(c.context, cluster.Namespace, cephUser, c.namespacedName, cluster.Spec.HealthCheck)
